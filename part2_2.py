@@ -91,7 +91,7 @@ validData = np.reshape(GvalidData,[1000, 784])
 validTarget = np.reshape(GvalidTarget,[1000, 1])
 
 
-for step in range(1, 20000):
+for step in range(1, 20):
 
     trainData, trainTarget = GtrainData, GtrainTarget
 
@@ -113,9 +113,9 @@ for step in range(1, 20000):
     
     epochs.append(step)
 
-    # accuracy = sess.run([a_accuracy], feed_dict = {a_X: trainData, a_W: currentW, a_b: currentb, a_target: trainTarget})
+    accuracy = sess.run([a_accuracy], feed_dict = {a_X: trainData, a_W: currentW, a_b: currentb, a_target: trainTarget})
 
-    # accuracys.append(accuracy)
+    accuracys.append(accuracy)
 
 
     if not step % (batchSize * 5):

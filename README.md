@@ -1,1 +1,0 @@
-# stochastic_gradient_descent
