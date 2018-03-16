@@ -47,22 +47,6 @@ def buildGraph(lr, decay):
     train = optimizer.minimize(loss=meanSquaredError)
     return W, b, X, y_target, y_predicted, meanSquaredError, train
 
-def getAccuracy():
-
-    X = tf.placeholder(tf.float32, [None, 784], name='input_x')
-    y_target = tf.placeholder(tf.float32, [None,1], name='target_y')
-
-    # Graph definition
-    y_predicted = tf.sigmoid(tf.matmul(X,W) + b)
-
-    # Error definition
-    error = tf.reduce_mean(tf.reduce_mean(tf.square(y_predicted - y_target), 
-                                                reduction_indices=1, 
-                                                name='squared_error'), 
-                                  name='mean_squared_error') 
-
-    return 1 - error
-
 
 decay_list = [0, 0.001, 0.1, 1]
 
@@ -107,12 +91,12 @@ for decay in decay_list:
                 print("step - %d"%(step))
 
 
-    yPredicted = tf.sigmoid(tf.matmul(validData,currentW)  + currentb)
+    validData = np.reshape(GvalidData,[100, 784])
+    validTarget = np.reshape(GvalidTarget,[100, 1])
 
-    error = tf.reduce_mean(tf.reduce_mean(tf.square(yPredicted - validTarget), reduction_indices=1, name='squared_error'), name='mean_squared_error') 
+    yPredicted = tf.sigmoid(tf.matmul(tf.cast(validData, tf.float32),currentW)  + currentb)
 
-
-
+    error = tf.reduce_mean(tf.reduce_mean(tf.square(yPredicted - tf.cast(validTarget, tf.float32)), reduction_indices=1, name='squared_error'), name='mean_squared_error') 
 
     print("Final Accuray for lumda is " + str(decay) + " is " + str(1-error))
 
