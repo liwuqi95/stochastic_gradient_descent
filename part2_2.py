@@ -43,7 +43,7 @@ def buildGraph(lr):
 
 
 
-lrs = [0.005, 0.001, 0.0001]
+lrs = [0.005]
 
 
 trainDataSize = 15000
@@ -68,7 +68,7 @@ for lr in lrs:
 	errors = []
 	epochs = []
 
-	for step in range(1, 200):
+	for step in range(1, 20000):
 
 		np.random.shuffle(randIndx)
 
@@ -89,6 +89,13 @@ for lr in lrs:
 	print("Final error for learning rate " + str(lr) + " is " +str(err))
 
 
+
+plt.figure(1)
+plt.plot(epochs_array[0], errors_array[0],'-', label = "learning rate = 0.005")
+plt.legend()
+
+plt.title("Linear Regression on mini batch with different learning rate")
+plt.show()
 
 
 
