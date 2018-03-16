@@ -98,24 +98,7 @@ for decay in decay_list:
 
     error = tf.reduce_mean(tf.reduce_mean(tf.square(yPredicted - tf.cast(validTarget, tf.float32)), reduction_indices=1, name='squared_error'), name='mean_squared_error') 
 
-    print("Final Accuray for lumda is " + str(decay) + " is " + str(1-error))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    print("Final Accuray for lumda is " + str(decay) + " is " + str(sess.run(1-error)))
 
 
 
