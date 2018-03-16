@@ -28,10 +28,10 @@ def buildGraph(lr):
     y_target = tf.placeholder(tf.int32, [None,1], name='target_y')
 
 
-    y_prob = tf.nn.softmax(tf.matmul(X,W) + b)
+    y_prob = tf.matmul(X,W) + b
 
     # Error definition
-    error =  tf.reduce_mean(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = y_prob, labels=tf.one_hot(y_target, 10))), 
+    error =  tf.reduce_mean(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = y_prob, labels=tf.one_hot(y_target, 10))  ), 
                                   name='mean_squared_error') + tf.multiply(tf.reduce_sum(tf.multiply(W, W)), lr/2)
 
 
@@ -80,6 +80,9 @@ errors = []
 epochs = []
 accuracys = []
 
+v_errors = []
+
+
 a_W, a_b, a_X, a_target, a_accuracy = getAccuracy()
 
 
@@ -88,7 +91,7 @@ validData = np.reshape(GvalidData,[1000, 784])
 validTarget = np.reshape(GvalidTarget,[1000, 1])
 
 
-for step in range(1, 200):
+for step in range(1, 20000):
 
     trainData, trainTarget = GtrainData, GtrainTarget
 
@@ -100,11 +103,19 @@ for step in range(1, 200):
     _, err, currentW, currentb, yhat = sess.run([train, error, W, b, y_prob], feed_dict={X: trainData , y_target: trainTarget})
 
     errors.append(err)
+    
+    validData = np.reshape(GvalidData,[1000, 784])
+    validTarget = np.reshape(GvalidTarget,[1000, 1])
+
+    _, err, currentW, currentb, yhat = sess.run([train, error, W, b, y_prob], feed_dict={X: validData , y_target: validTarget})
+
+    v_errors.append(err)
+    
     epochs.append(step)
 
-    accuracy = sess.run([a_accuracy], feed_dict = {a_X: validData, a_W: currentW, a_b: currentb, a_target: validTarget})
+    # accuracy = sess.run([a_accuracy], feed_dict = {a_X: trainData, a_W: currentW, a_b: currentb, a_target: trainTarget})
 
-    accuracys.append(accuracy)
+    # accuracys.append(accuracy)
 
 
     if not step % (batchSize * 5):
@@ -113,7 +124,7 @@ for step in range(1, 200):
 
 
 plt.figure(1)
-plt.plot(epochs, accuracys,'-', label = "accuracys")
+plt.plot(epochs, v_errors,'-', label = "validation_errors")
 plt.plot(epochs, errors,'-', label = "errors")
 plt.legend()
 
