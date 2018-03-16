@@ -31,8 +31,9 @@ def buildGraph(lr):
     y_prob = tf.nn.softmax(tf.matmul(X,W) + b)
 
     # Error definition
-    error = -tf.reduce_mean(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = y_prob, labels=tf.one_hot(y_target, 10))), 
-                                  name='mean_squared_error') + tf.multiply(tf.reduce_sum(tf.multiply(W, W)), 0.01/2)
+    error =  tf.reduce_mean(tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = y_prob, labels=tf.one_hot(y_target, 10))), 
+                                  name='mean_squared_error') + tf.multiply(tf.reduce_sum(tf.multiply(W, W)), lr/2)
+
 
     # Training mechanism
     optimizer = tf.train.GradientDescentOptimizer(learning_rate = lr)
@@ -41,57 +42,79 @@ def buildGraph(lr):
 
 
 
+def getAccuracy():
+
+    W = tf.placeholder(tf.float32, [784, 10], name='input_w')
+    b = tf.placeholder(tf.float32, shape = [1,10], name='input_b')
+    X = tf.placeholder(tf.float32, [None, 784], name='input_x')
+
+    y_target = tf.placeholder(tf.int32, [None,1], name='target_y')
+
+    y_predicted = tf.nn.softmax(tf.matmul(X,W) + b)
+
+    compare = tf.equal(tf.argmax(y_predicted, 1), tf.argmax(tf.argmax(tf.one_hot(y_target, 10),1),1))
+
+    accuracy = tf.reduce_mean(tf.cast(compare, tf.float32))
+
+    return W, b, X, y_target, accuracy
 
 
-lrs = [0.005]
+
+lr = 0.005
 
 
 trainDataSize = 15000
 batchSize = 500
 
-errors_array = []
-epochs_array = []
 
-randIndx = np.arange(trainDataSize)
+W, b, X, y_target, y_prob, error, train = buildGraph(lr)
 
-for lr in lrs:
+init = tf.global_variables_initializer()
+sess = tf.InteractiveSession()
+sess.run(init)
 
-	W, b, X, y_target, y_prob, error, train = buildGraph(lr)
+initialW = sess.run(W)
+initialb = sess.run(b)
 
-	init = tf.global_variables_initializer()
-	sess = tf.InteractiveSession()
-	sess.run(init)
+errors = []
+epochs = []
+accuracys = []
 
-	initialW = sess.run(W)
-	initialb = sess.run(b)
-
-	errors = []
-	epochs = []
-
-	for step in range(1, 20000):
-
-		np.random.shuffle(randIndx)
-
-		trainData, trainTarget = GtrainData[randIndx], GtrainTarget[randIndx]
-        
-		trainData = np.reshape(trainData[:batchSize],[batchSize, 784])
-		trainTarget = np.reshape(trainTarget[:batchSize],[batchSize, 1])
+a_W, a_b, a_X, a_target, a_accuracy = getAccuracy()
 
 
-		_, err, currentW, currentb, yhat = sess.run([train, error, W, b, y_prob], feed_dict={X: trainData , y_target: trainTarget})
 
-		errors.append(err)
-		epochs.append(step)
-		if not step % (batchSize * 5):
-			print("step - %d"%(step))
-	epochs_array.append(epochs)
-	errors_array.append(errors)
-	print("Final error for learning rate " + str(lr) + " is " +str(err))
+validData = np.reshape(GvalidData,[1000, 784])
+validTarget = np.reshape(GvalidTarget,[1000, 1])
+
+
+for step in range(1, 200):
+
+    trainData, trainTarget = GtrainData, GtrainTarget
+
+    index = (step * batchSize)%trainDataSize
+    
+    trainData = np.reshape(trainData[index:index + batchSize],[batchSize, 784])
+    trainTarget = np.reshape(trainTarget[index:index + batchSize],[batchSize, 1])
+
+    _, err, currentW, currentb, yhat = sess.run([train, error, W, b, y_prob], feed_dict={X: trainData , y_target: trainTarget})
+
+    errors.append(err)
+    epochs.append(step)
+
+    accuracy = sess.run([a_accuracy], feed_dict = {a_X: validData, a_W: currentW, a_b: currentb, a_target: validTarget})
+
+    accuracys.append(accuracy)
+
+
+    if not step % (batchSize * 5):
+        print("step - %d"%(step))
 
 
 
 plt.figure(1)
-plt.plot(epochs_array[0], errors_array[0],'-', label = "learning rate = 0.005")
+plt.plot(epochs, accuracys,'-', label = "accuracys")
+plt.plot(epochs, errors,'-', label = "errors")
 plt.legend()
 
 plt.title("Linear Regression on mini batch with different learning rate")

@@ -54,8 +54,6 @@ lrs = [0.005, 0.001, 0.0001]
 trainDataSize = 3500
 batchSize = 500
 
-
-
 errors_array = []
 epochs_array = []
 
@@ -80,14 +78,14 @@ for lr in lrs:
     errors = []
     epochs = []
 
-    for step in range(1, 20000):   
+    for step in range(1, 20000):
 
-        np.random.shuffle(randIndx)
+        trainData, trainTarget = GtrainData, GtrainTarget
 
-        trainData, trainTarget = GtrainData[randIndx], GtrainTarget[randIndx]
+        index = (step * batchSize)%trainDataSize
         
-        trainData = np.reshape(trainData[:batchSize],[batchSize, 784])
-        trainTarget = np.reshape(trainTarget[:batchSize],[batchSize, 1])
+        trainData = np.reshape(trainData[index:index + batchSize],[batchSize, 784])
+        trainTarget = np.reshape(trainTarget[index:index + batchSize],[batchSize, 1])
 
         _, err, currentW, currentb, yhat = sess.run([train, meanSquaredError, W, b, y_predicted], feed_dict={X: trainData , y_target: trainTarget})
 

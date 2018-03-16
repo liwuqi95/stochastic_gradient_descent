@@ -4,6 +4,7 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 import tensorflow as tf
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 
 data = np.load("notMNIST.npz")
 
@@ -48,9 +49,6 @@ def buildGraph(lr):
     return W, b, X, y_target, y_predicted, meanSquaredError, train
 
 
-
-
-
 batchs = [500, 1500, 3500]
 
 trainDataSize = 3500
@@ -82,6 +80,8 @@ for batchSize in batchs:
     errors = []
     epochs = []
 
+    start = time.time()
+
     for step in range(1, 20000):   
 
         np.random.shuffle(randIndx)
@@ -99,7 +99,14 @@ for batchSize in batchs:
                 print("step - %d"%(step))
     epochs_array.append(epochs)
     errors_array.append(errors)
-    print("Final error for batch size " + str(batchSize) + " is " +str(err))
+
+        
+    trainData = np.reshape(GtrainData,[trainDataSize, 784])
+    trainTarget = np.reshape(GtrainTarget,[trainDataSize, 1])
+
+    err = sess.run([meanSquaredError], feed_dict={X: trainData , y_target: trainTarget})
+
+    print("Final error for batch size " + str(batchSize) + " is " +str(err) +" time is " + str(time.time() - start))
 
 plt.figure(1)
 plt.plot(epochs_array[0], errors_array[0],'-', label = "batchSize = 500")
